@@ -349,15 +349,19 @@ def traced_get_response(django, pin, func, instance, args, kwargs):
             # In Django >= 2.2.0 we can access the original route or regex pattern
             if django.VERSION >= (2, 2, 0) and config.django.regex_resources:
                 route = utils.get_django_2_route(resolver, resolver_match)
+                resource = ""
                 if route:
-                    resource = "{0} {1}".format(request.method, route)
-                else:
-                    resource = request.method
+                    resource = str(route)
+
+                if config.django.method_resources:
+                    resource = "{0} {1}".format(request.method, resource)
             # Older versions just use the view/handler name, e.g. `views.MyView.handler`
             else:
                 # TODO: Validate if `resolver.pattern.regex.pattern` is available or not
                 callback, callback_args, callback_kwargs = resolver_match
-                resource = "{0} {1}".format(request.method, func_name(callback))
+                resource = func_name(callback)
+                if config.django.method_resources:
+                    resource = "{0} {1}".format(request.method, route)
 
         except error_type_404:
             # Normalize all 404 requests into a single resource name
