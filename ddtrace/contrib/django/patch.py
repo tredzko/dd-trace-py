@@ -35,8 +35,10 @@ config._add(
         cache_service_name=get_env("django", "cache_service_name") or "django",
         database_service_name_prefix=get_env("django", "database_service_name_prefix", default=""),
         distributed_tracing_enabled=True,
+        method_resources=asbool(get_env("django", "method_resources", default=True)),
         regex_resources=asbool(get_env("django", "regex_resources", default=True)),
         instrument_middleware=asbool(get_env("django", "instrument_middleware", default=True)),
+        instrument_rest_framework=asbool(get_env("django", "instrument_rest_framework", default=True)),
         instrument_databases=True,
         instrument_caches=True,
         analytics_enabled=None,  # None allows the value to be overridden by the global config
@@ -221,7 +223,7 @@ def traced_populate(django, pin, func, instance, args, kwargs):
     # Instrument Django Rest Framework if it's installed
     INSTALLED_APPS = getattr(settings, "INSTALLED_APPS", [])
 
-    if "rest_framework" in INSTALLED_APPS:
+    if "rest_framework" in INSTALLED_APPS and config.instrument_rest_framework:
         try:
             from .restframework import patch_restframework
 
