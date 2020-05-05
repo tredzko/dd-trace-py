@@ -35,6 +35,7 @@ config._add(
         cache_service_name=get_env("django", "cache_service_name") or "django",
         database_service_name_prefix=get_env("django", "database_service_name_prefix", default=""),
         distributed_tracing_enabled=True,
+        regex_resources=asbool(get_env("django", "regex_resources", default=True)),
         instrument_middleware=asbool(get_env("django", "instrument_middleware", default=True)),
         instrument_databases=True,
         instrument_caches=True,
@@ -346,7 +347,7 @@ def traced_get_response(django, pin, func, instance, args, kwargs):
 
             # Determine the resource name to use
             # In Django >= 2.2.0 we can access the original route or regex pattern
-            if django.VERSION >= (2, 2, 0):
+            if django.VERSION >= (2, 2, 0) and config.django.regex_resources:
                 route = utils.get_django_2_route(resolver, resolver_match)
                 if route:
                     resource = "{0} {1}".format(request.method, route)
